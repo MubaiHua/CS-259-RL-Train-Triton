@@ -8,7 +8,7 @@ from stable_baselines3 import PPO
 # Assuming rl_env.py, autotuner_benchmark.py and config.py are accessible
 from rl_env import TritonMatmulEnv 
 from autotuner_benchmark import benchmark_triton_autotuner
-from config import DEFAULT_TEST_SIZES, ACTION_CHOICES, FIXED_GROUP_SIZE_M
+from config import DEFAULT_TEST_SIZES, ACTION_CHOICES, FIXED_GROUP_SIZE_M, AUTOTUNER_BENCHMARK_ACTION_CHOICES
 
 def test_agent_vs_autotuner(model_path, test_sizes, render_mode=None):
     if not torch.cuda.is_available():
@@ -91,7 +91,9 @@ def test_agent_vs_autotuner(model_path, test_sizes, render_mode=None):
         autotuner_results = benchmark_triton_autotuner(
             M, N, K, 
             test_env.A_gpu, test_env.B_gpu, test_env.C_gpu,
-            device=test_env.device
+            action_choices_for_autotuner=AUTOTUNER_BENCHMARK_ACTION_CHOICES,
+            device=test_env.device,
+            fixed_group_size_m=FIXED_GROUP_SIZE_M
         )
         
         # 3. Print Comparison for the current size

@@ -9,6 +9,16 @@ ACTION_CHOICES = {
     'num_stages': [1, 2, 3, 4, 5]
 }
 
+ACTION_PARAM_NAMES = ['BLOCK_SIZE_M', 'BLOCK_SIZE_N', 'BLOCK_SIZE_K', 'num_warps', 'num_stages']
+
+AUTOTUNER_BENCHMARK_ACTION_CHOICES = {
+    'BLOCK_SIZE_M': [32, 64, 128],    
+    'BLOCK_SIZE_N': [32, 64, 128],    
+    'BLOCK_SIZE_K': [32, 64],         
+    'num_warps': [4, 8],              
+    'num_stages': [2, 3, 4]
+}
+
 # Names of parameters in the order they appear in the MultiDiscrete action vector
 # This order must be consistent.
 ACTION_PARAM_NAMES = ['BLOCK_SIZE_M', 'BLOCK_SIZE_N', 'BLOCK_SIZE_K', 'num_warps', 'num_stages']
