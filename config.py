@@ -1,4 +1,5 @@
 # config.py
+from random import randint
 
 def range_list(start, end, step=1):
     """Generates a list of integers from start to end with a specified step."""
@@ -50,6 +51,14 @@ DEFAULT_TRAIN_SIZES = [
     (512, 4096, 1024), # Very rectangular, larger N
     (1024, 1024, 4096)  # Very rectangular, larger K
 ]
+
+RAND_SIZE_MIN = 128
+RAND_SIZE_MAX = 4096
+random_train_sizes = lambda n: [
+    (randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2, randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2, randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2)
+    for _ in range(n)
+]
+
 
 DEFAULT_TEST_SIZES = [
     (1024, 1024, 1024), # Keep one common with train for direct comparison

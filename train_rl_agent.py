@@ -8,7 +8,7 @@ from stable_baselines3.common.callbacks import BaseCallback # For custom logging
 
 # Assuming rl_env.py and config.py are accessible
 from rl_env import TritonMatmulEnv
-from config import DEFAULT_TRAIN_SIZES, PPO_N_STEPS, PPO_BATCH_SIZE, PPO_N_EPOCHS, \
+from config import DEFAULT_TRAIN_SIZES, random_train_sizes, PPO_N_STEPS, PPO_BATCH_SIZE, PPO_N_EPOCHS, \
                    PPO_GAMMA, DEFAULT_TOTAL_TRAINING_TIMESTEPS_PER_SIZE
 
 # (Optional) Custom Callback for more detailed logging during training
@@ -138,17 +138,29 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
     env.close()
     return model_save_path # Return path for testing script
 
+
+
+
 if __name__ == "__main__":
     # To run training:
     # python train_rl_agent.py
+    import argparse
+    parser = argparse.ArgumentParser(description="Train RL agent for Triton matmul tuning")
+    parser.add_argument("--random-train", action="store_true",
+                        help="Use random sizes instead of default training sizes")
+    parser.add_argument("--num-random-sizes", type=int, default=500,
+                        help="Number of random sizes to generate if --random is specified")
+    parser.add_argument("--verbose", action="store_true")
 
-    # Example: Train on default sizes
+    args = parser.parse_args()
+
+    train_sizes = random_train_sizes(args.num_random_sizes) if args.random_train else DEFAULT_TRAIN_SIZES
     trained_model_path = train_agent(
-        train_sizes=DEFAULT_TRAIN_SIZES,
+        train_sizes=train_sizes,
         total_timesteps_per_size=DEFAULT_TOTAL_TRAINING_TIMESTEPS_PER_SIZE,
         model_save_path="ppo_triton_matmul_tuner_multisize.zip",
         load_existing_model=False, # Set to True to continue training
-        render_mode="human" # or None for less output
+        render_mode="human" if args.verbose else None # or None for less output
     )
     print(f"\nTraining finished. Model saved at: {trained_model_path}")
     print("You can now run test_rl_agent.py with this model.")
