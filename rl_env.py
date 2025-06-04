@@ -7,7 +7,7 @@ from gymnasium import spaces
 import numpy as np
 
 # Assuming triton_kernels.py and config.py are in the same directory or accessible in PYTHONPATH
-from triton_kernels import rl_managed_matmul_kernel 
+from triton_kernels import rl_managed_matmul_kernel
 from config import ACTION_CHOICES, ACTION_PARAM_NAMES, FIXED_GROUP_SIZE_M, \
                    R_W_TFLOPS, R_W_VRAM, R_ERROR_PENALTY, R_MAX_VRAM_PENALTY_VAL
 
@@ -23,7 +23,7 @@ class TritonMatmulEnv(gym.Env):
         # Define action space (MultiDiscrete)
         action_dims = [len(ACTION_CHOICES[name]) for name in ACTION_PARAM_NAMES]
         self.action_space = spaces.MultiDiscrete(action_dims)
-        
+
         # Define observation space (M, N, K)
         # Max values are placeholders, adjust if needed
         self.observation_space = spaces.Box(low=16, high=16384, shape=(3,), dtype=np.float32)
@@ -39,9 +39,9 @@ class TritonMatmulEnv(gym.Env):
         self.best_reward_current_size = -float('inf')
         self.best_config_current_size = None
         self.best_metrics_current_size = {}
-        
+
         self.current_step_in_episode = 0 # Tracks steps for current M,N,K
-        
+
         # Prepare tensors (will be resized in reset if M,N,K change)
         self._init_tensors()
 
@@ -71,8 +71,8 @@ class TritonMatmulEnv(gym.Env):
         for i, param_name in enumerate(ACTION_PARAM_NAMES):
             choice_index = discrete_action[i]
             config[param_name] = ACTION_CHOICES[param_name][choice_index]
-            
-        config['GROUP_SIZE_M'] = FIXED_GROUP_SIZE_M 
+
+        config['GROUP_SIZE_M'] = FIXED_GROUP_SIZE_M
         return config
 
     def _get_obs(self):
@@ -96,14 +96,14 @@ class TritonMatmulEnv(gym.Env):
     def step(self, action): # action is now a discrete numpy array of indices
         self.current_step_in_episode += 1
         config_dict = self._decode_action(action)
-        
+
         A, B, C = self.A_gpu, self.B_gpu, self.C_gpu
-        
+
         grid_fn = lambda META: (triton.cdiv(self.M, META['BLOCK_SIZE_M']) * triton.cdiv(self.N, META['BLOCK_SIZE_N']),)
         obs = self._get_obs()
         terminated = True # Each step is an episode for this tuning task
-        truncated = False 
-        
+        truncated = False
+
         runtime_ms, vram_mb, tflops = 0, self.max_vram_penalty_val, 0
         current_error = None
 
@@ -116,20 +116,21 @@ class TritonMatmulEnv(gym.Env):
                 torch.cuda.reset_peak_memory_stats()
                 torch.cuda.synchronize()
 
-                runtime_ms = triton.testing.do_bench(lambda: rl_managed_matmul_kernel[grid_fn](
+                kernel_fn = lambda: rl_managed_matmul_kernel[grid_fn](
                     A, B, C, self.M, self.N, self.K,
                     A.stride(0), A.stride(1), B.stride(0), B.stride(1), C.stride(0), C.stride(1),
                     **config_dict
-                ))
+                )
+                runtime_ms = triton.testing.do_bench(kernel_fn, warmup=5, rep=10)
                 torch.cuda.synchronize()
 
                 vram_bytes = torch.cuda.max_memory_allocated()
                 vram_mb = vram_bytes / (1024 * 1024)
-                if runtime_ms < 1e-6 : runtime_ms = 1e-6 
+                if runtime_ms < 1e-6 : runtime_ms = 1e-6
                 tflops = (2 * self.M * self.N * self.K) / (runtime_ms * 1e-3) / 1e12
-                
+
                 reward = (self.w_tflops * tflops) - (self.w_vram * vram_mb)
-                
+
                 if reward > self.best_reward_current_size:
                     self.best_reward_current_size = reward
                     self.best_config_current_size = config_dict.copy()
@@ -140,14 +141,14 @@ class TritonMatmulEnv(gym.Env):
                 reward = self.error_penalty
                 current_error = e
                 runtime_ms, vram_mb, tflops = float('inf'), self.max_vram_penalty_val, 0
-        
+
         metrics_log = {"runtime_ms": runtime_ms, "vram_mb": vram_mb, "tflops": tflops, "reward": reward}
         info = self._get_info(config=config_dict, metrics=metrics_log, error=current_error)
 
         if self.render_mode == "human":
             print(f"Size M={self.M},N={self.N},K={self.K} | Step: {self.current_step_in_episode}, Config: {config_dict}, Metrics: {metrics_log}")
             if current_error: print(f"Error: {current_error}")
-        
+
         return obs, reward, terminated, truncated, info
 
     def render(self):
@@ -158,6 +159,6 @@ class TritonMatmulEnv(gym.Env):
                 print(f"Config: {self.best_config_current_size}")
                 print(f"Metrics: {self.best_metrics_current_size}")
             print("------------------------------------")
-    
+
     def close(self):
         if self.render_mode == "human": print("Environment closed.")

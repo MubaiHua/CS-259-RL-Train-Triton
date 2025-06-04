@@ -41,14 +41,14 @@ class TrainingProgressCallback(BaseCallback):
         self.logger.record("custom/current_env_best_reward", current_best_reward_env)
         if current_best_metrics_env and "tflops" in current_best_metrics_env:
             self.logger.record("custom/current_env_best_tflops", current_best_metrics_env["tflops"])
-        
+
         # Track overall best across all sizes if desired (more complex logic needed if model is reused)
         # For simplicity, this callback logs per-step, assuming env resets bests per size.
         return True
 
-def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_triton_tuner.zip", 
+def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_triton_tuner.zip",
                 load_existing_model=False, existing_model_path=None, render_mode=None):
-    
+
     if not torch.cuda.is_available():
         print("CUDA is not available. Training requires an NVIDIA GPU.")
         return
@@ -66,14 +66,14 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
         print("Model loaded.")
     else:
         print("Creating a new PPO model.")
-        model = PPO("MlpPolicy", env, verbose=1, device="cuda",
+        model = PPO("MlpPolicy", env, verbose=1, device="cpu",
                     n_steps=PPO_N_STEPS,
                     batch_size=PPO_BATCH_SIZE,
                     n_epochs=PPO_N_EPOCHS,
                     gamma=PPO_GAMMA,
                     tensorboard_log="./ppo_triton_tensorboard/"
                     )
-    
+
     overall_best_reward_across_all_sizes = -float('inf')
     overall_best_config_details = {} # Store best config per size
 
@@ -81,7 +81,7 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
 
     for i, (M, N, K) in enumerate(train_sizes):
         print(f"\n--- Training for size: M={M}, N={N}, K={K} (Size {i+1}/{len(train_sizes)}) ---")
-        
+
         # Reconfigure the environment for the new size and reset it
         env.reconfigure_size(M, N, K)
         # If model is reused, its internal state is preserved.
@@ -94,7 +94,7 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
         try:
             # The callback can be used for more detailed logging
             # callback = TrainingProgressCallback()
-            model.learn(total_timesteps=total_timesteps_per_size, 
+            model.learn(total_timesteps=total_timesteps_per_size,
                         reset_num_timesteps=False, # Continue global timestep count if model is reused
                         progress_bar=True
                         # callback=callback
@@ -123,7 +123,7 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
     training_end_time = time.time()
     print(f"\n--- Overall RL Training Complete ---")
     print(f"Total training time: {training_end_time - training_start_time:.2f} seconds.")
-    
+
     print("\nBest configurations found per size by RL agent:")
     for size_key, results in overall_best_config_details.items():
         print(f"  Size {size_key}: Reward={results['reward']:.4f}, TFLOPs={results['metrics'].get('tflops',0):.2f}")
@@ -134,14 +134,14 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
         print(f"\nSaving trained model to {model_save_path}...")
         model.save(model_save_path)
         print("Model saved.")
-    
+
     env.close()
     return model_save_path # Return path for testing script
 
 if __name__ == "__main__":
     # To run training:
     # python train_rl_agent.py
-    
+
     # Example: Train on default sizes
     trained_model_path = train_agent(
         train_sizes=DEFAULT_TRAIN_SIZES,

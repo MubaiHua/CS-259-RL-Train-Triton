@@ -1,21 +1,29 @@
 # config.py
 
+def range_list(start, end, step=1):
+    """Generates a list of integers from start to end with a specified step."""
+    return list(range(start, end + 1, step))
+
+def power_of_two_range(start_exp, end_exp):
+    """Generates a list of powers of two from 2^start_exp to 2^end_exp."""
+    return [2 ** i for i in range(start_exp, end_exp + 1)]
+
 # Action choices for the RL agent and the discrete search space for Triton's autotuner
 ACTION_CHOICES = {
-    'BLOCK_SIZE_M': [16, 32, 64, 128, 256],
-    'BLOCK_SIZE_N': [16, 32, 64, 128, 256],
-    'BLOCK_SIZE_K': [16, 32, 64, 128],
-    'num_warps': [2, 4, 8, 16],
+    'BLOCK_SIZE_M': power_of_two_range(2,8),
+    'BLOCK_SIZE_N': power_of_two_range(2,8),
+    'BLOCK_SIZE_K': power_of_two_range(2,8),
+    'num_warps': power_of_two_range(2,5),
     'num_stages': [1, 2, 3, 4, 5]
 }
 
 ACTION_PARAM_NAMES = ['BLOCK_SIZE_M', 'BLOCK_SIZE_N', 'BLOCK_SIZE_K', 'num_warps', 'num_stages']
 
 AUTOTUNER_BENCHMARK_ACTION_CHOICES = {
-    'BLOCK_SIZE_M': [32, 64, 128],    
-    'BLOCK_SIZE_N': [32, 64, 128],    
-    'BLOCK_SIZE_K': [32, 64],         
-    'num_warps': [4, 8],              
+    'BLOCK_SIZE_M': [32, 64, 128],
+    'BLOCK_SIZE_N': [32, 64, 128],
+    'BLOCK_SIZE_K': [32, 64],
+    'num_warps': [4, 8],
     'num_stages': [2, 3, 4]
 }
 
@@ -46,7 +54,7 @@ DEFAULT_TRAIN_SIZES = [
 DEFAULT_TEST_SIZES = [
     (1024, 1024, 1024), # Keep one common with train for direct comparison
     (2048, 2048, 2048),
-    (512, 2048, 1024), 
+    (512, 2048, 1024),
     (3000, 1000, 2000), # Larger, non-power of 2 test case
     (4096, 4096, 4096)  # Even larger test case
 ]
