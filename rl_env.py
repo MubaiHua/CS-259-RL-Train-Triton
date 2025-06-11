@@ -7,7 +7,7 @@ from gymnasium import spaces
 import numpy as np
 
 # Assuming triton_kernels.py and config.py are in the same directory or accessible in PYTHONPATH
-from triton_kernels import rl_managed_matmul_kernel
+from triton_kernels import rl_managed_matmul_kernel, matmul_bench
 from config import ACTION_CHOICES, ACTION_PARAM_NAMES, FIXED_GROUP_SIZE_M, \
                    R_W_TFLOPS, R_W_VRAM, R_ERROR_PENALTY, R_MAX_VRAM_PENALTY_VAL
 
@@ -99,7 +99,7 @@ class TritonMatmulEnv(gym.Env):
 
         A, B, C = self.A_gpu, self.B_gpu, self.C_gpu
 
-        grid_fn = lambda META: (triton.cdiv(self.M, META['BLOCK_SIZE_M']) * triton.cdiv(self.N, META['BLOCK_SIZE_N']),)
+
         obs = self._get_obs()
         terminated = True # Each step is an episode for this tuning task
         truncated = False
@@ -116,12 +116,9 @@ class TritonMatmulEnv(gym.Env):
                 torch.cuda.reset_peak_memory_stats()
                 torch.cuda.synchronize()
 
-                kernel_fn = lambda: rl_managed_matmul_kernel[grid_fn](
-                    A, B, C, self.M, self.N, self.K,
-                    A.stride(0), A.stride(1), B.stride(0), B.stride(1), C.stride(0), C.stride(1),
-                    **config_dict
-                )
-                runtime_ms = triton.testing.do_bench(kernel_fn, warmup=10, rep=50)
+                if self.kernel_type == "matmul":
+                    runtime_ms = matmul_bench(self.M, self.N, self.K, A, B, C, config_dict)
+
                 torch.cuda.synchronize()
 
                 vram_bytes = torch.cuda.max_memory_allocated()
@@ -162,3 +159,4 @@ class TritonMatmulEnv(gym.Env):
 
     def close(self):
         if self.render_mode == "human": print("Environment closed.")
+

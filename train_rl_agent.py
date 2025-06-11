@@ -8,8 +8,11 @@ from stable_baselines3.common.callbacks import BaseCallback # For custom logging
 
 # Assuming rl_env.py and config.py are accessible
 from rl_env import TritonMatmulEnv
-from config import DEFAULT_TRAIN_SIZES, random_train_sizes, PPO_N_STEPS, PPO_BATCH_SIZE, PPO_N_EPOCHS, \
+from conv_env import TritonConv2dEnv
+from config import DEFAULT_TRAIN_SIZES, PPO_N_STEPS, PPO_BATCH_SIZE, PPO_N_EPOCHS, \
                    PPO_GAMMA, DEFAULT_TOTAL_TRAINING_TIMESTEPS_PER_SIZE
+from config import random_train_sizes as random_train_sizes_matmul
+from config_conv2d import random_train_sizes as random_train_sizes_conv2d
 
 # (Optional) Custom Callback for more detailed logging during training
 class TrainingProgressCallback(BaseCallback):
@@ -46,7 +49,7 @@ class TrainingProgressCallback(BaseCallback):
         # For simplicity, this callback logs per-step, assuming env resets bests per size.
         return True
 
-def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_triton_tuner.zip",
+def train_agent(train_sizes, total_timesteps_per_size, kernel_type, model_save_path="ppo_triton_tuner.zip",
                 load_existing_model=False, existing_model_path=None, render_mode=None):
 
     if not torch.cuda.is_available():
@@ -57,8 +60,16 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
 
     # Initialize environment - it will be reconfigured for each size
     # The first size in the list is used for initial setup
-    initial_M, initial_N, initial_K = train_sizes[0]
-    env = TritonMatmulEnv(M=initial_M, N=initial_N, K=initial_K, render_mode=render_mode)
+    if kernel_type == "matmul":
+        initial_M, initial_N, initial_K = train_sizes[0]
+        env = TritonMatmulEnv(M=initial_M, N=initial_N, K=initial_K, render_mode=render_mode)
+    elif kernel_type == "conv2d":
+        env = TritonConv2dEnv(
+                N=1, C_in=3, H=32, W=32,
+                C_out=8, KH=3, KW=3,
+                stride=(1, 1), padding=(1, 1)
+              )
+
 
     if load_existing_model and existing_model_path and os.path.exists(existing_model_path):
         print(f"Loading existing model from {existing_model_path}")
@@ -79,11 +90,11 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
 
     training_start_time = time.time()
 
-    for i, (M, N, K) in enumerate(train_sizes):
-        print(f"\n--- Training for size: M={M}, N={N}, K={K} (Size {i+1}/{len(train_sizes)}) ---")
+    for i, config_tuple in enumerate(train_sizes):
+        print(f"\n--- Training for size: {config_tuple} (Size {i+1}/{len(train_sizes)}) ---")
 
         # Reconfigure the environment for the new size and reset it
-        env.reconfigure_size(M, N, K)
+        env.reconfigure_size(*config_tuple)
         # If model is reused, its internal state is preserved.
         # SB3 PPO model's `set_env` can be used if you want to ensure the model is
         # strictly aware of the new env instance, though for PPO, just changing env's state
@@ -100,18 +111,18 @@ def train_agent(train_sizes, total_timesteps_per_size, model_save_path="ppo_trit
                         # callback=callback
                         )
         except Exception as e:
-            print(f"An error occurred during model training for size M={M},N={N},K={K}: {e}")
+            print(f"An error occurred during model training for size {config_tuple}: {e}")
             import traceback
             traceback.print_exc()
             continue # Move to next size if error occurs
 
         size_train_end_time = time.time()
-        print(f"Training for size M={M},N={N},K={K} finished in {size_train_end_time - size_train_start_time:.2f} seconds.")
+        print(f"Training for size {config_tuple} finished in {size_train_end_time - size_train_start_time:.2f} seconds.")
         env.render() # Show best for this size
 
         # Store the best result for this size
         if env.best_reward_current_size > -float('inf'): # Check if any valid config was found
-             overall_best_config_details[(M,N,K)] = {
+             overall_best_config_details[config_tuple] = {
                 "reward": env.best_reward_current_size,
                 "config": env.best_config_current_size,
                 "metrics": env.best_metrics_current_size
@@ -150,15 +161,26 @@ if __name__ == "__main__":
                         help="Use random sizes instead of default training sizes")
     parser.add_argument("-n", "--num-random-sizes", type=int, default=100,
                         help="Number of random sizes to generate if --random is specified")
+    parser.add_argument("--kernel-type", type=str, default="matmul",
+                        choices=["matmul", "conv2d"],
+                        help="Type of kernel to tune (default: matmul)")
     parser.add_argument("--verbose", action="store_true")
 
     args = parser.parse_args()
 
-    train_sizes = random_train_sizes(args.num_random_sizes) if args.random_train else DEFAULT_TRAIN_SIZES
+    if args.kernel_type == "matmul":
+        random_train_sizes = random_train_sizes_matmul(args.num_random_sizes)
+    elif args.kernel_type == "conv2d":
+        random_train_sizes = random_train_sizes_conv2d(args.num_random_sizes)
+    else:
+        raise ValueError(f"Unsupported kernel type: {args.kernel_type}. Choose 'matmul' or 'conv2d'.")
+
+    train_sizes = random_train_sizes if args.random_train else DEFAULT_TRAIN_SIZES
     trained_model_path = train_agent(
         train_sizes=train_sizes,
         total_timesteps_per_size=DEFAULT_TOTAL_TRAINING_TIMESTEPS_PER_SIZE,
-        model_save_path="ppo_triton_matmul_tuner_multisize.zip",
+        kernel_type=args.kernel_type,
+        model_save_path=f"ppo_triton_{args.kernel_type}_tuner_multisize.zip",
         load_existing_model=False, # Set to True to continue training
         render_mode="human" if args.verbose else None # or None for less output
     )
