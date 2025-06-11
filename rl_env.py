@@ -121,7 +121,7 @@ class TritonMatmulEnv(gym.Env):
                     A.stride(0), A.stride(1), B.stride(0), B.stride(1), C.stride(0), C.stride(1),
                     **config_dict
                 )
-                runtime_ms = triton.testing.do_bench(kernel_fn, warmup=5, rep=10)
+                runtime_ms = triton.testing.do_bench(kernel_fn, warmup=10, rep=50)
                 torch.cuda.synchronize()
 
                 vram_bytes = torch.cuda.max_memory_allocated()

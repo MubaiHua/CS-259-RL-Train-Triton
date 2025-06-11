@@ -53,7 +53,7 @@ DEFAULT_TRAIN_SIZES = [
 ]
 
 RAND_SIZE_MIN = 128
-RAND_SIZE_MAX = 4096
+RAND_SIZE_MAX = 2048
 random_train_sizes = lambda n: [
     (randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2, randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2, randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2)
     for _ in range(n)
@@ -68,12 +68,17 @@ DEFAULT_TEST_SIZES = [
     (4096, 4096, 4096)  # Even larger test case
 ]
 
+random_test_sizes = lambda n: [
+    (randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2, randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2, randint(RAND_SIZE_MIN, RAND_SIZE_MAX) >> 2 << 2)
+    for _ in range(n)
+]
+
 # RL Agent training parameters
 PPO_N_STEPS = 64
 PPO_BATCH_SIZE = 32
 PPO_N_EPOCHS = 10
 PPO_GAMMA = 0.95
-DEFAULT_TOTAL_TRAINING_TIMESTEPS_PER_SIZE = 500 # Timesteps for each matrix size during training
+DEFAULT_TOTAL_TRAINING_TIMESTEPS_PER_SIZE = 1000 # Timesteps for each matrix size during training
 
 # Reward weights
 R_W_TFLOPS = 1.0

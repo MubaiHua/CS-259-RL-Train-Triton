@@ -148,7 +148,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train RL agent for Triton matmul tuning")
     parser.add_argument("--random-train", action="store_true",
                         help="Use random sizes instead of default training sizes")
-    parser.add_argument("--num-random-sizes", type=int, default=500,
+    parser.add_argument("-n", "--num-random-sizes", type=int, default=100,
                         help="Number of random sizes to generate if --random is specified")
     parser.add_argument("--verbose", action="store_true")
 
