@@ -5,9 +5,7 @@ import triton.language as tl
 import itertools
 import time
 
-# Assuming triton_kernels.py and config.py are accessible
-from triton_kernels import matmul_kernel_logic # Use the core logic
-# ACTION_PARAM_NAMES is needed to map choices correctly
+from triton_kernels import matmul_kernel_logic 
 from config import ACTION_PARAM_NAMES
 
 def benchmark_triton_autotuner(M, N, K, A_gpu, B_gpu, C_gpu,
@@ -63,9 +61,6 @@ def benchmark_triton_autotuner(M, N, K, A_gpu, B_gpu, C_gpu,
     # Key for autotuning, using distinct names for M, N, K arguments to the kernel
     key_for_autotune = ['M_key', 'N_key', 'K_key']
 
-    # Define the autotuned kernel locally. This ensures it captures the current `autotune_configs`.
-    # It's crucial that this definition is fresh for each call to benchmark_triton_autotuner
-    # if `autotune_configs` could change, or if Triton's caching across calls is a concern.
     @triton.autotune(configs=autotune_configs, key=key_for_autotune)
     @triton.jit
     def _autotuned_kernel_for_benchmark(
@@ -119,7 +114,7 @@ def benchmark_triton_autotuner(M, N, K, A_gpu, B_gpu, C_gpu,
         ),
             warmup=10,
             rep=50
-        ) # Warmup and repetitions for accurate timing
+        )
         torch.cuda.synchronize()
 
         vram_bytes_autotune = torch.cuda.max_memory_allocated()
@@ -134,10 +129,8 @@ def benchmark_triton_autotuner(M, N, K, A_gpu, B_gpu, C_gpu,
     except Exception as e:
         print(f"Error during Triton Autotuner benchmark execution for M={M},N={N},K={K}: {e}")
         error_message = str(e)
-        # Ensure metrics reflect error state
         runtime_ms_autotune = float('inf')
         tflops_autotune = 0
-        # vram_mb_autotune might have a value from before error, or reset if needed
 
     results = {
         "best_config": best_config_dict_autotune,

@@ -11,10 +11,10 @@ def power_of_two_range(start_exp, end_exp):
 
 # Action choices for the RL agent and the discrete search space for Triton's autotuner
 ACTION_CHOICES = {
-    'BLOCK_SIZE_M': power_of_two_range(2,8),
-    'BLOCK_SIZE_N': power_of_two_range(2,8),
-    'BLOCK_SIZE_K': power_of_two_range(2,8),
-    'num_warps': power_of_two_range(2,5),
+    'BLOCK_SIZE_M': power_of_two_range(4,8),
+    'BLOCK_SIZE_N': power_of_two_range(4,8),
+    'BLOCK_SIZE_K': power_of_two_range(4,8),
+    'num_warps': [4, 8],
     'num_stages': [1, 2, 3, 4, 5]
 }
 
@@ -61,11 +61,14 @@ random_train_sizes = lambda n: [
 
 
 DEFAULT_TEST_SIZES = [
+    (128, 128, 128),
+    (256, 256, 256),
+    (512, 512, 512),
     (1024, 1024, 1024), # Keep one common with train for direct comparison
     (2048, 2048, 2048),
-    (512, 2048, 1024),
-    (3000, 1000, 2000), # Larger, non-power of 2 test case
-    (4096, 4096, 4096)  # Even larger test case
+    (4096, 4096, 4096),
+    (8192, 8192, 8192), # Larger, non-power of 2 test case
+      # Even larger test case
 ]
 
 random_test_sizes = lambda n: [
@@ -81,9 +84,9 @@ PPO_GAMMA = 0.95
 DEFAULT_TOTAL_TRAINING_TIMESTEPS_PER_SIZE = 1000 # Timesteps for each matrix size during training
 
 # Reward weights
-R_W_TFLOPS = 1.0
-R_W_VRAM = 0.05
+R_W_TFLOPS = 0.05
+R_W_VRAM = 1
 
 # Penalties
-R_ERROR_PENALTY = -200.0
+R_ERROR_PENALTY = -1000.0
 R_MAX_VRAM_PENALTY_VAL = 20000 # MB

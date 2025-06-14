@@ -1,0 +1,327 @@
+{
+    "test_sizes": [
+        [
+            14,
+            24,
+            256,
+            16,
+            16,
+            5,
+            5,
+            [
+                1,
+                1
+            ],
+            [
+                3,
+                3
+            ]
+        ],
+        [
+            12,
+            24,
+            224,
+            192,
+            16,
+            1,
+            1,
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ]
+        ],
+        [
+            1,
+            32,
+            48,
+            176,
+            32,
+            1,
+            1,
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ]
+        ],
+        [
+            14,
+            32,
+            48,
+            96,
+            32,
+            1,
+            1,
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ]
+        ],
+        [
+            13,
+            24,
+            144,
+            192,
+            8,
+            1,
+            1,
+            [
+                2,
+                2
+            ],
+            [
+                1,
+                1
+            ]
+        ]
+    ],
+    "num_test_sizes": 5,
+    "results": [
+        {
+            "size": [
+                14,
+                24,
+                256,
+                16,
+                16,
+                5,
+                5,
+                [
+                    1,
+                    1
+                ],
+                [
+                    3,
+                    3
+                ]
+            ],
+            "rl_agent": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 32,
+                    "BLOCK_SIZE_CIN": 16,
+                    "BLOCK_SIZE_COUT": 32,
+                    "num_warps": 4,
+                    "num_stages": 4
+                },
+                "runtime_ms": 0.20534971462828772,
+                "vram_mb": 269.6552734375,
+                "tflops": 6.078933210399703,
+                "reward": -6.903830461475297
+            },
+            "autotuner": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 16,
+                    "BLOCK_SIZE_W": 8,
+                    "BLOCK_SIZE_CIN": 16,
+                    "BLOCK_SIZE_COUT": 16,
+                    "num_warps": 8,
+                    "num_stages": 1
+                },
+                "tflops": 7.962406730492567,
+                "vram_mb": 269.6552734375,
+                "runtime_ms": 0.15677511112557518,
+                "error": null
+            }
+        },
+        {
+            "size": [
+                12,
+                24,
+                224,
+                192,
+                16,
+                1,
+                1,
+                [
+                    2,
+                    2
+                ],
+                [
+                    1,
+                    1
+                ]
+            ],
+            "rl_agent": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 32,
+                    "BLOCK_SIZE_CIN": 16,
+                    "BLOCK_SIZE_COUT": 32,
+                    "num_warps": 4,
+                    "num_stages": 4
+                },
+                "runtime_ms": 0.05935647673563126,
+                "vram_mb": 292.66748046875,
+                "tflops": 1.7018627377416504,
+                "reward": -12.43151128569585
+            },
+            "autotuner": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 16,
+                    "BLOCK_SIZE_CIN": 16,
+                    "BLOCK_SIZE_COUT": 16,
+                    "num_warps": 4,
+                    "num_stages": 4
+                },
+                "tflops": 2.192655383502355,
+                "vram_mb": 292.66748046875,
+                "runtime_ms": 0.046070429835921134,
+                "error": null
+            }
+        },
+        {
+            "size": [
+                1,
+                32,
+                48,
+                176,
+                32,
+                1,
+                1,
+                [
+                    2,
+                    2
+                ],
+                [
+                    1,
+                    1
+                ]
+            ],
+            "rl_agent": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 4,
+                    "BLOCK_SIZE_CIN": 64,
+                    "BLOCK_SIZE_COUT": 16,
+                    "num_warps": 4,
+                    "num_stages": 4
+                },
+                "runtime_ms": 0.010177391265397486,
+                "vram_mb": 292.66748046875,
+                "tflops": 0.44773752734581834,
+                "reward": -13.685636496091682
+            },
+            "autotuner": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 16,
+                    "BLOCK_SIZE_CIN": 64,
+                    "BLOCK_SIZE_COUT": 32,
+                    "num_warps": 4,
+                    "num_stages": 1
+                },
+                "tflops": 0.5778432158163569,
+                "vram_mb": 292.66748046875,
+                "runtime_ms": 0.007885876091081748,
+                "error": null
+            }
+        },
+        {
+            "size": [
+                14,
+                32,
+                48,
+                96,
+                32,
+                1,
+                1,
+                [
+                    2,
+                    2
+                ],
+                [
+                    1,
+                    1
+                ]
+            ],
+            "rl_agent": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 16,
+                    "BLOCK_SIZE_W": 4,
+                    "BLOCK_SIZE_CIN": 64,
+                    "BLOCK_SIZE_COUT": 16,
+                    "num_warps": 4,
+                    "num_stages": 4
+                },
+                "runtime_ms": 0.03649742871389857,
+                "vram_mb": 292.66748046875,
+                "tflops": 0.9623472457561032,
+                "reward": -13.171026777681398
+            },
+            "autotuner": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 16,
+                    "BLOCK_SIZE_CIN": 32,
+                    "BLOCK_SIZE_COUT": 32,
+                    "num_warps": 4,
+                    "num_stages": 1
+                },
+                "tflops": 2.0845055709571048,
+                "vram_mb": 292.66748046875,
+                "runtime_ms": 0.01684965513614488,
+                "error": null
+            }
+        },
+        {
+            "size": [
+                13,
+                24,
+                144,
+                192,
+                8,
+                1,
+                1,
+                [
+                    2,
+                    2
+                ],
+                [
+                    1,
+                    1
+                ]
+            ],
+            "rl_agent": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 32,
+                    "BLOCK_SIZE_CIN": 16,
+                    "BLOCK_SIZE_COUT": 32,
+                    "num_warps": 4,
+                    "num_stages": 4
+                },
+                "runtime_ms": 0.03982943391321965,
+                "vram_mb": 292.66748046875,
+                "tflops": 0.8874932060801307,
+                "reward": -13.24588081735737
+            },
+            "autotuner": {
+                "best_config": {
+                    "BLOCK_SIZE_H": 4,
+                    "BLOCK_SIZE_W": 16,
+                    "BLOCK_SIZE_CIN": 16,
+                    "BLOCK_SIZE_COUT": 16,
+                    "num_warps": 4,
+                    "num_stages": 3
+                },
+                "tflops": 1.049654534105421,
+                "vram_mb": 292.66748046875,
+                "runtime_ms": 0.03367617711490762,
+                "error": null
+            }
+        }
+    ]
+}

@@ -23,8 +23,8 @@ ACTION_CHOICES = {
 ACTION_PARAM_NAMES = ['BLOCK_SIZE_H', 'BLOCK_SIZE_W', 'BLOCK_SIZE_CIN', 'BLOCK_SIZE_COUT', 'num_warps', 'num_stages']
 
 AUTOTUNER_BENCHMARK_ACTION_CHOICES = {
-    'BLOCK_SIZE_H': power_of_two_range(2,7),
-    'BLOCK_SIZE_W': power_of_two_range(2,7),
+    'BLOCK_SIZE_H': power_of_two_range(2,5),
+    'BLOCK_SIZE_W': power_of_two_range(2,5),
     'BLOCK_SIZE_CIN': power_of_two_range(4,6),
     'BLOCK_SIZE_COUT': power_of_two_range(4,6),
     'num_warps': power_of_two_range(2,5),
@@ -100,11 +100,11 @@ random_train_sizes = lambda n: generate_random_conv_configs(n)
 
 
 DEFAULT_TEST_SIZES = [
-    (1024, 1024, 1024), # Keep one common with train for direct comparison
-    (2048, 2048, 2048),
-    (512, 2048, 1024),
-    (3000, 1000, 2000), # Larger, non-power of 2 test case
-    (4096, 4096, 4096)  # Even larger test case
+    (1, 3, 224, 224, 64, 7, 7, (2, 2), (3, 3)),
+    (4, 64, 56, 56, 128, 3, 3, (1, 1), (1, 1)),
+    (8, 128, 28, 28, 256, 3, 3, (1, 1), (1, 1)),
+    (1, 256, 14, 14, 512, 3, 3, (1, 1), (1, 1)),
+    (1, 512, 7, 7, 512, 3, 3, (1, 1), (1, 1)),
 ]
 
 random_test_sizes = lambda n: generate_random_conv_configs(n)
